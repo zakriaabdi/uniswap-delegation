@@ -36,8 +36,7 @@ contract ProposalTest is Test {
 
 
     function setUp() public {
-        console.log("here");
-        uint256 mainnetFork = vm.createFork(vm.envString("MAINNET_RPC_URL"),18676941);
+        uint256 mainnetFork = vm.createFork("https://ethereum.publicnode.com",18676941);
         vm.selectFork(mainnetFork);
 
         governanceContract = iGovernorBravo(0x408ED6354d4973f66138C91495F2f2FCbd8724C3);
@@ -61,12 +60,11 @@ contract ProposalTest is Test {
 
 
     function executeSteps() internal {
-        bytes memory approval_data = abi.encodeWithSignature("approve(address,uint256)", 0xf754A7E347F81cFdc70AF9FbCCe9Df3D826360FA, 10000000 * 10**18);
-        bytes memory fundmany_data = abi.encodeWithSignature("fundMany(address[],uint256[])", delegatees, delegateAmounts);
+        bytes memory approvalData = abi.encodeWithSignature("approve(address,uint256)", 0xf754A7E347F81cFdc70AF9FbCCe9Df3D826360FA, 10000000 * 10**18);
+        bytes memory fundmanyData = abi.encodeWithSignature("fundMany(address[],uint256[])", delegatees, delegateAmounts);
 
-        data.push(approval_data);
-        data.push(fundmany_data);
-
+        data.push(approvalData);
+        data.push(fundmanyData);
         //Delegate from timelock to give Wintermute enough power to make a proposal + win a vote  
         vm.prank(timeLock);
         address(uniswapToken).call(abi.encodeWithSelector(0x5c19a95c, wintermuteGov));
@@ -88,6 +86,10 @@ contract ProposalTest is Test {
         governanceContract.queue(id);
         vm.warp(block.timestamp + 172800);
         governanceContract.execute(id);
+
+        // Log the calldata payload
+        bytes memory finalData = abi.encodeWithSelector(governanceContract.propose.selector, targets, values, sigs, data, "some description");
+        console.logBytes(finalData);
     }
 
 
