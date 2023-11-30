@@ -2,6 +2,7 @@
 - This script serves two purposes, firstly for the deployer to send a proposal and for other delegates / Uniswap foundation to vet the call data submitted.
 - For the latter purpose omit all flags/arguments when running i.e only do `python3 ./proposer.py`.
 - Currently the proposal description, which is passed as a parameter to the proposal call is set as "some description" as a placeholder, but can be updated after everyone comes to an agreement for this arg.
+- Uses Cast (part of Foundry) so Foundry must be installed
 
 
 ## Proposer directory

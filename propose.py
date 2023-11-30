@@ -4,16 +4,17 @@ import subprocess
 from eth_account.account import Account, LocalAccount
 
 parser = argparse.ArgumentParser()
-parser.add_argument("--private-key", required=True)
-parser.add_argument("--rpc-url", help="Specify RPC endpoint with https or http if local", required=True)
-parser.add_argument("--proposal-description", help="Used as an argument for the proposal", required=False, default="some description")
+parser.add_argument("--private-key", required=False)
+parser.add_argument("--rpc-url", help="Specify RPC endpoint with https or http if local", required=False)
 parser.add_argument("--is-deployment", help="set if you are the deployer", action="store_true", default=False, required=False)
 args = parser.parse_args()
 
-w3: Web3 = Web3(HTTPProvider(args.rpc_url))
-account: LocalAccount = Account.from_key(args.private_key)
-
+w3: Web3 | None = None
+account: LocalAccount | None = None
 if args.is_deployment:
+    w3 =  Web3(HTTPProvider(args.rpc_url))
+    account  = Account.from_key(args.private_key)
+
     assert input(f"Transaction sender address is: {w3.to_checksum_address(account.address)}, type 'yes' to continue: \n") == "yes"
 
 # helper
@@ -44,11 +45,11 @@ proposal_values ='[0,0]'
 # defined in the calldata so this is redundant
 proposal_signatures = '["",""]'
 proposal_calldatas = f'[{approve_calldata[:len(approve_calldata) - 1]},{franchiser_fund_many_calldata[:len(franchiser_fund_many_calldata) - 1]}]'
-proposal_description = args.proposal_description
+
 
 proc: subprocess.CompletedProcess = subprocess.run([
     "cast", "calldata", "propose(address[],uint[],string[],bytes[],string)",
-    proposal_targets, proposal_values, proposal_signatures, proposal_calldatas, proposal_description
+    proposal_targets, proposal_values, proposal_signatures, proposal_calldatas, "some description"
 ], capture_output=True, check=True)
 final_calldata  = str(proc.stdout, 'UTF-8')
 final_calldata = final_calldata[:len(final_calldata) - 1]
